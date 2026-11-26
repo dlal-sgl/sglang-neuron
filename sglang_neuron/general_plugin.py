@@ -410,7 +410,7 @@ def _register() -> None:
                           _preempt_only_for_an_admitted_request, HookType.AROUND)
     from sglang_neuron.sglang_patches import chunk_keyed_tree, decode_graph_buckets, prefill_chunk_grid
 
-    prefill_chunk_grid.register(HookRegistry, HookType.AROUND, HookType.REPLACE)
+    prefill_chunk_grid.register(HookRegistry, HookType.AROUND)
     if policy.megakernel:
         # a megakernel decode's capture list is the runtime's own buckets (its warm captures), not upstream's
         # attention-TP-aligned subset — a per-layer model keeps upstream's
