@@ -61,9 +61,9 @@ def _checked(cls, where: str) -> Optional[type]:
 def layout_state_pool_cls(model) -> Optional[type]:
     """The platform's state pool class for ``model``'s built megakernel layout, or None (no layout, or a layout whose
     platform answers none)."""
-    from sglang_neuron.sglang_patches.megakernel_pool_layout import pool_layout
+    from sglang.srt.kernel_plugins.megakernel import oot_megakernel_pool_layout
 
-    layout = pool_layout(model)
+    layout = oot_megakernel_pool_layout(model)
     if layout is None:
         return None
     resolve = getattr(_platform(), "get_megakernel_state_pool_cls", None)

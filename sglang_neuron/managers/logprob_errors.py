@@ -12,6 +12,7 @@ _VALUES = (
     "input_top_logprobs_val", "output_top_logprobs_val",
     "input_token_ids_logprobs_val", "output_token_ids_logprobs_val",
     "input_top_logprobs_val_flat",
+    "input_top_logprobs_weights",
 )
 
 

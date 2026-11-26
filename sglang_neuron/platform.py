@@ -510,13 +510,14 @@ _HOST_SAMPLER_SOURCES_MD5 = {
 }
 
 
-def megakernel_serving(server_args, spec):
-    """The model's catalog.MegakernelServing when the launch serves its whole-model megakernel (the model declares one
-    and the launch passes --enable-nvidia-megakernel), else None."""
+def megakernel_serving(architecture, spec, *, target):
+    """Use registration metadata while resolving the platform's model defaults."""
     megakernel = getattr(spec, "megakernel", None)
-    if megakernel is None or not getattr(server_args, "enable_nvidia_megakernel", False):
+    if megakernel is None:
         return None
-    return megakernel
+    from sglang_neuron.megakernel import upstream
+
+    return megakernel if upstream.require().spec_registered([architecture], target=target) else None
 
 
 def host_sampler_unserved(server_args, megakernel=None, spec=None) -> list:
@@ -569,7 +570,15 @@ def check_host_sampler(server_args, megakernel=None, spec=None) -> None:
 class NeuronSRTPlatform(SRTPlatform, NeuronDeviceMixin):
     # Only graph capture, for the decode graph runner. No Triton kernels, piecewise prefill graphs, HiCache device
     # kernels or PyNccl communicators.
-    capabilities = PlatformCapabilities(graph_capture=True)
+    capabilities = PlatformCapabilities(
+        graph_capture=True, supports_megakernel=True, accepts_legacy_megakernel_flag=True
+    )
+
+    def requires_megakernel(self, server_args, hf_config) -> bool:
+        return (
+            "Qwen3_5MoeForCausalLM" in (hf_config.architectures or ())
+            and bool(os.environ.get("SGLANG_NEURON_QWEN35_PACK"))
+        )
 
     def support_mamba_cache_extra_buffer(self) -> bool:
         """Upstream's mamba extra buffer (the tracking slots its radix cache adopts as state checkpoints) is served for
@@ -604,7 +613,7 @@ class NeuronSRTPlatform(SRTPlatform, NeuronDeviceMixin):
         chunk_keyed_tree.validate_launch(server_args, architecture, spec)
         check_quantization(server_args, architecture, spec)
         _check_plugin_env(server_args)
-        megakernel = megakernel_serving(server_args, spec)
+        megakernel = megakernel_serving(architecture, spec, target=self.get_megakernel_target())
         check_host_sampler(server_args, megakernel, spec)
         check_pipeline_stages(server_args, architecture, spec)
         check_model_launch(server_args, architecture, spec)

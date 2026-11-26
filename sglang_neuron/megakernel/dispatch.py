@@ -26,20 +26,18 @@ from .built import NeuronBuiltMegakernel
 
 logger = logging.getLogger(__name__)
 
-# SGLang's attributes on the model: the built object (kernel_plugins.nvidia.binding.built_megakernel) and the platform's
-# whole-step dispatch (sglang_patches/megakernel_platform.EAGER_DISPATCH_KEY)
-_BUILT = "_megakernel"
-_DISPATCH = "_megakernel_eager_dispatch"
-
-
 def dispatch_of(model) -> Optional["NeuronMegakernelDispatch"]:
     """The model's installed Neuron megakernel dispatch, or None (the model's own host serves it)."""
-    dispatch = None if model is None else getattr(model, "__dict__", {}).get(_DISPATCH)
+    from sglang.srt.kernel_plugins.megakernel import oot_megakernel_dispatch
+
+    dispatch = oot_megakernel_dispatch(model)
     return dispatch if isinstance(dispatch, NeuronMegakernelDispatch) else None
 
 
 def built_megakernel(model):
-    return None if model is None else getattr(model, "__dict__", {}).get(_BUILT)
+    from sglang.srt.kernel_plugins.megakernel import oot_built_megakernel
+
+    return oot_built_megakernel(model)
 
 
 def _gather_tp(value) -> list:

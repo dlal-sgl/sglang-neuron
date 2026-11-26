@@ -76,9 +76,9 @@ _WEIGHT_UPDATES = (
 _LAUNCH_SOURCES_MD5 = {
     # an abort without logprob rows is formatted by add_logprob_to_meta_info instead
     ("sglang.srt.managers.tokenizer_manager", "TokenizerManager.convert_logprob_style"):
-        "ec11343974cdefc7f5c077f9c03da245",
+        "52fef61e42b6992795578645cf017313",
     # handles an abort itself and sends the scheduler only in_place and retract pauses, which a pipelined server refuses
-    ("sglang.srt.managers.tokenizer_manager", "TokenizerManager.pause_generation"): "201c5381ee9e863303c8b562c79b16e2",
+    ("sglang.srt.managers.tokenizer_manager", "TokenizerManager.pause_generation"): "2f219d8c0002bf5fb69539295a94f38a",
     # its first argument is the timeout a pipelined server refuses
     ("sglang.srt.managers.tokenizer_control_mixin", "TokenizerControlMixin.flush_cache"):
         "c01ade18185dfb7a995460013edecc1f",
@@ -312,7 +312,9 @@ def _register_launch_hooks() -> None:
     HookRegistry.register(f"{_CONTROL}.flush_cache", _refuse_timed_flush_under_pp, HookType.AROUND)
     # the launching process checks its arguments against the backend choices
     _register_attention_backend()
-    _register_megakernel_launch_seams()
+    from sglang_neuron.megakernel.registry import register_specs
+
+    register_specs()
 
 
 def register() -> None:
@@ -465,7 +467,6 @@ def _register() -> None:
     disaggregation.register_hooks(HookRegistry, HookType)
     _register_pipeline_parallel(policy)
     _register_decode_context_parallel(policy)
-    _register_megakernel_runtime_seams(policy)
     # HiCache L2 (only reached with --enable-hierarchical-cache): the Neuron host pools, their transfer events and the
     # node's shared host budget
     from sglang_neuron.mem_cache import host_budget, host_pool, hybrid_host_pool
@@ -563,36 +564,6 @@ def _register_decode_context_parallel(policy) -> None:
     from sglang_neuron.sglang_patches import dcp_groups
 
     dcp_groups.register(HookRegistry, HookType.REPLACE)
-
-
-def _register_megakernel_launch_seams() -> None:
-    """The platform seams of upstream SGLang's megakernel binding (--enable-nvidia-megakernel) that every process
-    reads: the platform's device target and the target registry the specs are found in (argument resolution, the
-    tokenizer, the schedulers) and GPT-OSS's backend overrides left to a registered spec (argument resolution). Then the
-    specs the plugin ships, on their targets (megakernel/registry.py). Without the flag every hooked function is
-    upstream's (docs/design/megakernel.md, Seams; the seams a later spec needs register here with it)."""
-    from sglang_neuron.megakernel.registry import register_specs
-    from sglang_neuron.sglang_patches import megakernel_oot_overrides, megakernel_platform, megakernel_request_contract
-
-    megakernel_platform.register(HookRegistry, HookType.AROUND, HookType.REPLACE)
-    megakernel_request_contract.register(HookRegistry, HookType.AROUND)
-    megakernel_oot_overrides.register()
-    register_specs()
-
-
-def _register_megakernel_runtime_seams(policy) -> None:
-    """The megakernel seams of a scheduler process: a platform-owned whole-step dispatch run by EagerRunner, KV
-    pools in a built megakernel's declared layout, and, on a launch of a model's whole-model megakernel
-    (ServingPolicy.megakernel), the MLP sync cohort snapshot its spec can ask for (megakernel_platform.
-    agree_mlp_sync_cohort turns it on; off, it changes nothing)."""
-    from sglang_neuron.sglang_patches import megakernel_eager_dispatch, megakernel_pool_layout
-
-    megakernel_eager_dispatch.register(HookRegistry, HookType.AROUND)
-    megakernel_pool_layout.register(HookRegistry, HookType.AROUND)
-    if policy.megakernel:
-        from sglang_neuron.sglang_patches import mlp_sync_cohort_snapshot
-
-        mlp_sync_cohort_snapshot.register(HookRegistry, HookType.AROUND, HookType.REPLACE)
 
 
 def _register_model_package() -> None:
