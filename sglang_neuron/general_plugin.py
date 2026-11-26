@@ -87,7 +87,7 @@ _RUNTIME_SOURCES_MD5 = {
     # every use_* argument is a device communicator, turned off
     ("sglang.srt.distributed.parallel_state", "init_model_parallel_group"): "fe3cc1fab307a27a8e48c3ee6657bbec",
     # replaced by the NeuronCore's HBM, in the same units and with the same MIN over cpu_group
-    ("sglang.srt.utils.common", "get_available_gpu_memory"): "7ddd40c3e8ba9f559e516b07771ed49e",
+    ("sglang.srt.utils.device", "get_available_gpu_memory"): "0320d5c2a2141021531b0ce0d8fdd815",
     # replaced by the torch copy it dispatches to off CUDA
     ("sglang.srt.layers.dp_attention", "memcpy_func"): "3dada4b81a6675de576fdc5fa4cdf287",
     ("sglang.srt.layers.dp_attention", "memcpy_cpu"): "6ab5f4cac56f480f6e82c4ffdb873a91",
@@ -360,7 +360,7 @@ def _register() -> None:
     HookRegistry.register("sglang.srt.distributed.parallel_state.init_model_parallel_group",
                           _init_model_parallel_group_without_device_communicators, HookType.AROUND)
     HookRegistry.register("sglang.srt.layers.dp_attention.memcpy_func", _memcpy_torch, HookType.REPLACE)
-    HookRegistry.register("sglang.srt.utils.common.get_available_gpu_memory", _available_device_memory_gb,
+    HookRegistry.register("sglang.srt.utils.device.get_available_gpu_memory", _available_device_memory_gb,
                           HookType.AROUND)
     HookRegistry.register("sglang.srt.distributed.bootstrap._bind_threads_if_cpu", _no_cpu_engine_binding,
                           HookType.AROUND)
