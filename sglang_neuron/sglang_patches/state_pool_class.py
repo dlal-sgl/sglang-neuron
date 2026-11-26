@@ -6,7 +6,7 @@ mem_cache/state_pool.NeuronStatePool bound to the model's spec and kernels) in o
 
 - a megakernel model: its built object's ``pool_layout.state_pool_class`` (megakernel/pools.PoolLayout), which the
   platform answers through ``get_megakernel_state_pool_cls(pool_layout=...)``
-  (sglang_patches/megakernel_pool_layout.pool_layout reads the layout);
+  (SGLang's ``oot_megakernel_pool_layout`` reads the layout);
 - a platform-runtime model: ``NeuronModel.state_pool_class`` on the model object SGLang built.
 
 While SGLang's KV cache configurator builds that model's pools (``_init_pools``), every request table with Mamba-style

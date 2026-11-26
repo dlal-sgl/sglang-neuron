@@ -35,7 +35,7 @@ connector registers and sends the pool's state entries. The platform supplies th
   bank or the padding/sink slots), through mem_cache/state_host_pool; ``get_cpu_copy`` / ``load_cpu_copy`` are
   upstream's retraction backup and restore of a request's slot, synchronous and slot-granular;
 * a separate radix checkpoint store (mem_cache/state_checkpoint_pool) binds to the pool it serves at construction
-  (``HybridReqToTokenPool._init_mamba_pool``, through sglang_patches/megakernel_pool_layout) and copies slots into and
+  (``HybridReqToTokenPool._init_mamba_pool``, through sglang_patches/state_pool_class) and copies slots into and
   out of it with the model's ``copy_across``;
 * a failed operation or drain quarantines the pool: every later operation raises with the first failure, and slots
   are never handed to new owners over state an operation may still write;

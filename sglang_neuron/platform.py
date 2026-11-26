@@ -722,9 +722,9 @@ class NeuronSRTPlatform(SRTPlatform, NeuronDeviceMixin):
             return NeuronMLATokenToKVPool
         return None
 
-    # megakernels (sglang_patches/megakernel_platform.py; docs/design/megakernel.md, Seams)
+    # Native SGLang megakernel platform methods.
     def get_megakernel_target(self) -> str:
-        """The device target megakernel specs are matched on (Requirements.isas, register(..., isa=...)): the
+        """The device target megakernel specs are matched on (Requirements.isas, register(..., target=...)): the
         platform target's family (trn2, trn3, ...), from NEURON_PLATFORM_TARGET_OVERRIDE or the runtime's instance
         family; static, so the tokenizer process answers it too."""
         from sglang_neuron.backend.stack import get_platform_target, normalize_target_family
@@ -734,8 +734,7 @@ class NeuronSRTPlatform(SRTPlatform, NeuronDeviceMixin):
     def install_megakernel_dispatch(self, *, model, built, binding):
         """The whole-step dispatch of a built megakernel: the megakernel host's (sglang_neuron.megakernel.host
         create_dispatch), a callable with model.forward's signature that EagerRunner runs for every covered step
-        (sglang_patches/megakernel_eager_dispatch.py). The upstream model.forward wrapper (CUDA graphs) is never
-        used on this platform, so a launch without the host is refused."""
+        through SGLang's native dispatch. The host is required for a Neuron megakernel launch."""
         try:
             from sglang_neuron.megakernel.host import create_dispatch
         except ImportError as e:
@@ -750,7 +749,7 @@ class NeuronSRTPlatform(SRTPlatform, NeuronDeviceMixin):
     def activate_megakernel_pool_layout(self, pool_layout) -> None:
         """Accept a built megakernel's pool layout: an object with pool_class(kind) (the KV pool class of each kind
         its model builds, ValueError for another) and a state_pool_class. Validation only: each model's configurator
-        reads its own built object's layout (sglang_patches/megakernel_pool_layout.py), never a process-global one."""
+        reads its own built object's layout through SGLang's native pool selection."""
         if not callable(getattr(pool_layout, "pool_class", None)) or not hasattr(pool_layout, "state_pool_class"):
             raise NotImplementedError(f"the Neuron platform builds pools in a layout with pool_class(kind) and a "
                                       f"state_pool_class, not in {pool_layout!r}")

@@ -49,7 +49,7 @@ like the pool's tensors (so ``copy_across`` pads the same way), each bank under 
 (1..num_slots, upstream's ``MambaSlotAllocator`` ids) is slot ``(g - 1) % bank slots + 1`` of bank ``(g - 1) // bank
 slots``. A working-bank pool's checkpoints are its canonical slots; the working rows are never stored.
 
-The store binds to the request pool it serves when that pool is built (sglang_patches/megakernel_pool_layout's
+The store binds to the request pool it serves when that pool is built (sglang_patches/state_pool_class's
 ``init_mamba_pool``): it checks the two agree on the state spec and warms ``copy_across`` both ways, so a radix insert
 or hit never compiles on one rank while the others wait. A failed copy quarantines what it may have half written: the
 store on a store, the request pool on a hit."""
@@ -434,8 +434,7 @@ _SOURCES_MD5 = {
 
 
 def register_hooks(registry, around) -> None:
-    """Registered with the megakernel pool-layout seam (sglang_patches/megakernel_pool_layout.register), which builds
-    the Neuron state pools this store serves."""
+    """Registered by the state-pool hook that builds the Neuron pools this store serves."""
     from sglang_neuron.sglang_patches import source_guard
 
     source_guard.check_targets(_SOURCES_MD5, __name__)
