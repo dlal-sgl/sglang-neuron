@@ -45,11 +45,10 @@ def convert_logprob_style(original, manager, meta_info, state, top_logprobs_num,
 
 
 def finish_prefill_aborts(original, scheduler, *args, **kwargs):
-    """AROUND SchedulerDisaggregationPrefillMixin.process_disagg_prefill_inflight_queue: keep a pending abort when the
-    request's KV transfer completes."""
+    """Keep a pending abort when the request's KV transfer completes."""
     from sglang.srt.managers.schedule_batch import FINISH_ABORT
 
-    for req in scheduler.disagg_prefill_inflight_queue:
+    for req in scheduler.disagg_prefill_transfer_queue:
         if (
             not req.pending_bootstrap
             and not req.finished()

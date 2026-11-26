@@ -101,8 +101,8 @@ _RUNTIME_SOURCES_MD5 = {
     ("sglang.srt.managers.schedule_policy", "PrefillAdder.add_one_req"): "7307599dd69fb761692018e8f1234ceb",
     ("sglang.srt.managers.schedule_policy", "PrefillAdder.preempt_to_schedule"): "4786f82c61c5ddc9ada287fc0fd0658e",
     # it would replace a request's pending abort with a successful finish, so the hook applies the abort first
-    ("sglang.srt.disaggregation.prefill", "SchedulerDisaggregationPrefillMixin.process_disagg_prefill_inflight_queue"):
-        "5b49bcb8e522b632073c48f2c075fd7f",
+    ("sglang.srt.disaggregation.prefill", "SchedulerDisaggregationPrefillMixin.process_disagg_prefill_transfer_queue"):
+        "5a34449ca451e64c6ac6759f54b9e460",
     # replaced: the requests go over the TP group's message queue instead of its broadcast
     ("sglang.srt.managers.scheduler_components.request_receiver",
      "SchedulerRequestReceiver._broadcast_reqs_across_ranks"): "2c89050881db2b90eb39e316e32cd8c6",
@@ -435,7 +435,7 @@ def _register() -> None:
     from sglang_neuron.managers.logprob_errors import finish_prefill_aborts
 
     HookRegistry.register(
-        "sglang.srt.disaggregation.prefill.SchedulerDisaggregationPrefillMixin.process_disagg_prefill_inflight_queue",
+        "sglang.srt.disaggregation.prefill.SchedulerDisaggregationPrefillMixin.process_disagg_prefill_transfer_queue",
         finish_prefill_aborts, HookType.AROUND)
     if policy.async_execution:
         from sglang_neuron.model_executor import async_execution
