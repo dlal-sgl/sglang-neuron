@@ -95,7 +95,7 @@ _RUNTIME_SOURCES_MD5 = {
     ("sglang.srt.distributed.bootstrap", "_bind_threads_if_cpu"): "1e52fe867f47edcd9ca7660377258941",
     ("sglang.srt.configs.update_config", "adjust_config_with_unaligned_cpu_tp"): "c9df08e993bbda72f93d21f8cc5b935b",
     # skipped when the graph sampled on device (its tokens and logprobs are returned instead); runs on the host sampler
-    ("sglang.srt.model_executor.model_runner", "ModelRunner.sample"): "0f4e42b94e8efa0ee418ac2ca1c9a297",
+    ("sglang.srt.model_executor.model_runner", "ModelRunner.sample"): "782f8a03a5b848b8519b55f4ae062608",
     # skipped after the forward's first request, along with preemption for a request the forward refuses
     ("sglang.srt.managers.schedule_policy", "PrefillAdder.add_one_req"): "7307599dd69fb761692018e8f1234ceb",
     ("sglang.srt.managers.schedule_policy", "PrefillAdder.preempt_to_schedule"): "4786f82c61c5ddc9ada287fc0fd0658e",
@@ -798,6 +798,10 @@ def _sample_on_device(original_fn, self, logits_output, forward_batch, *args, **
     ns = getattr(logits_output, "neuron_sample", None)
     if ns is None:
         return original_fn(self, logits_output, forward_batch, *args, **kwargs)
+    if (self.sampling_observer is not None or self.canary_manager is not None
+            or forward_batch.ngram_embedding_info is not None):
+        raise RuntimeError("The Neuron device sampler does not support sampling observers, KV canaries, or n-gram updates")
+    logits_output.auxiliary_device_output = None
     pending = getattr(logits_output, "neuron_pending_sample", None)
     if pending is not None:
         pending.top_logprobs_nums = tuple(int(k or 0) for k in (forward_batch.top_logprobs_nums or ()))
