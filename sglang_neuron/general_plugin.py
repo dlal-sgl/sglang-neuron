@@ -260,8 +260,8 @@ def _register_launch_hooks() -> None:
     from sglang_neuron.managers.logprob_errors import convert_logprob_style
     from sglang_neuron.sglang_patches import (bootstrap_listen_backlog, crash_diagnostics_platform,
                                               decode_radix_prefill_chunks, detokenizer_sender, gpt_oss_backend_check,
-                                              http_fatal_sigquit, neuron_system_profile, pd_fake_prefill,
-                                              quantization_registry, source_guard)
+                                              neuron_system_profile, pd_fake_prefill, quantization_registry,
+                                              source_guard)
 
     source_guard.check_targets(_LAUNCH_SOURCES_MD5, __name__)
 
@@ -288,8 +288,6 @@ def _register_launch_hooks() -> None:
     neuron_system_profile.register_tokenizer(HookRegistry, HookType.AROUND)
     # a crashing server neither triggers CUDA coredumps nor waits 60 s for them
     crash_diagnostics_platform.register(HookRegistry, HookType.REPLACE)
-    # a multi-worker HTTP server keeps SGLang's fatal SIGQUIT handler under Uvicorn's supervisor
-    http_fatal_sigquit.register(HookRegistry, HookType.AROUND, HookType.REPLACE)
     # SGLang's PP passes over the server arguments run here, before the policy is exported; the hooks keep the overlap
     # schedule on for a pipelined decode, reading the policy when they run
     from sglang_neuron.sglang_patches import pp_overlap_schedule
