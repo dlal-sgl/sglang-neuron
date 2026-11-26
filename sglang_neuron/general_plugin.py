@@ -113,6 +113,11 @@ _RUNTIME_SOURCES_MD5 = {
     ("sglang.srt.layers.attention.attention_registry", "attn_backend_wrapper"): "21597b238e312032c5f9a9e9bb4e77f4",
     ("sglang.srt.model_executor.model_runner", "ModelRunner.decode_graph_gather_requirements"):
         "2fbdd971ac0802feaa71f9435cd8348c",
+    # wrapped for a model that allocates HBM beside SGLang's pools
+    ("sglang.srt.mem_cache.kv_cache_configurator", "KVCacheConfigurator._profile_available_bytes"):
+        "a37361b546bfd8b842bcfcf41b8810e9",
+}
+_MODEL_OWNED_DRAFT_POOL_SOURCES_MD5 = {
     # the readers of the configurator fields _without_draft_kv_pool clears: the DFLASH draft cell size, the fused draft
     # pool's decision and the draft pool's budget
     ("sglang.srt.mem_cache.kv_cache_configurator", "KVCacheConfigurator.__post_init__"):
@@ -120,10 +125,6 @@ _RUNTIME_SOURCES_MD5 = {
     ("sglang.srt.mem_cache.kv_cache_configurator", "KVCacheConfigurator._fused_draft_decision"):
         "f75de5ff155c59d64eb7ffb7dd794780",
     ("sglang.srt.model_executor.pool_configurator", "_dflash_draft_cell_size"): "f4f4333d3e77ae141d7dce96d7f07cdc",
-    # wrapped for a model that allocates HBM beside SGLang's pools: the KV budget it returns
-    # (_less_the_model_pools_beside_sglang)
-    ("sglang.srt.mem_cache.kv_cache_configurator", "KVCacheConfigurator._profile_available_bytes"):
-        "fb3fed1784bea1f39ccd4a5059b8d81b",
 }
 
 
@@ -737,6 +738,9 @@ def _without_draft_kv_pool(configurator) -> None:
     KV capacity several times over (the Kimi-K3 decode: 95,360 tokens a rank instead of its 435,072)."""
     import msgspec
 
+    from sglang_neuron.sglang_patches import source_guard
+
+    source_guard.check_targets(_MODEL_OWNED_DRAFT_POOL_SOURCES_MD5, __name__)
     aux = configurator.spec_aux_config
     configurator.spec_aux_config = msgspec.structs.replace(aux, dflash_draft_num_layers=None,
                                                            draft_kv_num_layers=None, draft_model_config=None)
