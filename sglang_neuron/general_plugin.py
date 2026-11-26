@@ -85,7 +85,7 @@ _LAUNCH_SOURCES_MD5 = {
 }
 _RUNTIME_SOURCES_MD5 = {
     # every use_* argument is a device communicator, turned off
-    ("sglang.srt.distributed.parallel_state", "init_model_parallel_group"): "fe3cc1fab307a27a8e48c3ee6657bbec",
+    ("sglang.srt.distributed.parallel_state", "init_model_parallel_group"): "dfb58a5970e01e203765fb22843e6ce4",
     # replaced by the NeuronCore's HBM, in the same units and with the same MIN over cpu_group
     ("sglang.srt.utils.device", "get_available_gpu_memory"): "0320d5c2a2141021531b0ce0d8fdd815",
     # replaced by the torch copy it dispatches to off CUDA
@@ -93,8 +93,7 @@ _RUNTIME_SOURCES_MD5 = {
     ("sglang.srt.layers.dp_attention", "memcpy_cpu"): "6ab5f4cac56f480f6e82c4ffdb873a91",
     # skipped: they only bind and re-align for SGLang's CPU engine
     ("sglang.srt.distributed.bootstrap", "_bind_threads_if_cpu"): "1e52fe867f47edcd9ca7660377258941",
-    ("sglang.srt.model_executor.model_runner", "adjust_config_with_unaligned_cpu_tp"):
-        "0b961c0c5f169b47ef54864f93d86ea3",
+    ("sglang.srt.configs.update_config", "adjust_config_with_unaligned_cpu_tp"): "c9df08e993bbda72f93d21f8cc5b935b",
     # skipped when the graph sampled on device (its tokens and logprobs are returned instead); runs on the host sampler
     ("sglang.srt.model_executor.model_runner", "ModelRunner.sample"): "0f4e42b94e8efa0ee418ac2ca1c9a297",
     # skipped after the forward's first request, along with preemption for a request the forward refuses
@@ -365,7 +364,7 @@ def _register() -> None:
     from sglang_neuron.sglang_patches import numa_node_published
 
     numa_node_published.register(HookRegistry, HookType.AROUND)
-    HookRegistry.register("sglang.srt.model_executor.model_runner.adjust_config_with_unaligned_cpu_tp",
+    HookRegistry.register("sglang.srt.configs.update_config.adjust_config_with_unaligned_cpu_tp",
                           _keep_model_config, HookType.AROUND)
 
     # the model, its KV pool and its sampled outputs
