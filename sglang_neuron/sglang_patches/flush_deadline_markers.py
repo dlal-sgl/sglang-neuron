@@ -154,7 +154,7 @@ def init_request_dispatcher(original_fn, self, *args, **kwargs):
     """AROUND Scheduler.init_request_dispatcher: the scheduler dispatches each marker to the flush wrapper's
     ``expire``."""
     out = original_fn(self, *args, **kwargs)
-    from sglang.utils import TypeBasedDispatcher
+    from sglang.srt.utils.common import TypeBasedDispatcher
 
     self._request_dispatcher += TypeBasedDispatcher([(FlushDeadlineReached, self.flush_wrapper.expire)])
     return out
