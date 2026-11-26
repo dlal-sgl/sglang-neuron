@@ -17,7 +17,7 @@ from typing import Optional
 import torch
 
 from sglang.srt.mem_cache.allocator.paged import PagedTokenToKVPoolAllocator, alloc_decode_naive
-from sglang.srt.utils import get_num_new_pages
+from sglang.srt.mem_cache.utils import get_num_new_pages
 
 from sglang_neuron.mem_cache.page_set import PageSetFreeMixin
 
