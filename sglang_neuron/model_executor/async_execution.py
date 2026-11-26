@@ -695,11 +695,15 @@ def _resolve_inputs(original_fn, batch, future_map):
     import torch
 
     batch.neuron_token_plan = None
+    if future_map is None:
+        return original_fn(batch, future_map)
     if _token_io["pp"] == "other" and batch.prefill_input_ids_cpu is None and batch.input_ids is None:
         # a PP decode stage that embeds nothing: zero placeholder ids, like the first stage's, so every stage's batch
         # fingerprint hashes the same ids
         batch.input_ids = torch.zeros(len(batch.req_pool_indices), dtype=torch.int32)
-        return None
+        if not future_map.takes_deferred_relay(batch):
+            future_map.flush_deferred_relay()
+        return False
     if batch.prefill_input_ids_cpu is None and batch.input_ids is None and future_map.spec_algo.is_none():
         slots = tuple(batch.req_pool_indices.tolist())
         generations = tuple(future_map.neuron_req_pool.req_generation[list(slots)].tolist())
@@ -711,7 +715,7 @@ def _resolve_inputs(original_fn, batch, future_map):
             if relay.host_resolves == 1 or relay.host_resolves % 1000 == 0:
                 logger.info("[neuron] decode ids on the host from the lagged readback: plans=%d (host rows=%d)",
                             relay.host_resolves, relay.host_rows)
-            return
+            return False
         if slots and not _token_io["width"]:
             # every asynchronous decode runtime configures its fixed decode token width (NeuronModelRuntime.__init__)
             raise RuntimeError("A decode batch resolved its tokens without a fixed decode token width")
@@ -724,7 +728,7 @@ def _resolve_inputs(original_fn, batch, future_map):
                 logger.info("[neuron] decode token plans=%d (identity=%d, reorder=%d, host rows=%d, cross-group "
                             "rows=%d)",
                             count, relay.device_relays, relay.reorders, relay.host_rows, relay.cross_group_rows)
-            return
+            return False
     # a mixed chunk (batch.mix_running_indices) never reaches here: the platform refuses --enable-mixed-chunk
     return original_fn(batch, future_map)
 
@@ -792,12 +796,12 @@ def _copy_result(original_fn, self, return_logprob, return_hidden_states=True):
         event.future = _copy_executor.submit(copy)
 
 
-# the upstream functions the hooks below skip for a device-resident batch, md5-pinned against upstream SGLang 43881a7
-# (source_guard); the other hooks call the original and add the token relay around it
+# Source guards for upstream relay and result functions the runtime depends on.
 _SOURCES_MD5 = {
-    ("sglang.srt.managers.overlap_utils", "FutureMap.stash"): "d2570dafb5b11a037f44f8b64f5f1d2f",
-    ("sglang.srt.managers.overlap_utils", "resolve_forward_inputs"): "6bcb6d51708f84aee8ae3e87b257f472",
-    ("sglang.srt.managers.utils", "GenerationBatchResult.copy_to_cpu"): "c582417d4ee3d2f60fc5a43878025301",
+    ("sglang.srt.managers.overlap_utils", "FutureMap.stash"): "eec845aa82e8690fefea510c93aa6bee",
+    ("sglang.srt.managers.overlap_utils", "FutureMap._stash"): "95d129921e1c7cf44194f3f7a7d77276",
+    ("sglang.srt.managers.overlap_utils", "resolve_forward_inputs"): "22eb963dd2efd872f41713f10550cdbc",
+    ("sglang.srt.managers.utils", "GenerationBatchResult.copy_to_cpu"): "e0a99e51c5a80340b999a57118a5a7e1",
 }
 
 
@@ -807,7 +811,7 @@ def register_hooks(registry, around):
     source_guard.check_targets(_SOURCES_MD5, __name__)
     for target, hook in (
         ("sglang.srt.managers.overlap_utils.FutureMap.__init__", _future_map_init),
-        ("sglang.srt.managers.overlap_utils.FutureMap.stash", _stash),
+        ("sglang.srt.managers.overlap_utils.FutureMap._stash", _stash),
         ("sglang.srt.managers.overlap_utils.resolve_forward_inputs", _resolve_inputs),
         ("sglang.srt.model_executor.forward_batch_info.ForwardBatch.init_new", _forward_batch_init),
         ("sglang.srt.managers.scheduler.Scheduler.init_overlap", _scheduler_init_overlap),
