@@ -801,6 +801,7 @@ _SOURCES_MD5 = {
     ("sglang.srt.managers.overlap_utils", "FutureMap.stash"): "eec845aa82e8690fefea510c93aa6bee",
     ("sglang.srt.managers.overlap_utils", "FutureMap._stash"): "95d129921e1c7cf44194f3f7a7d77276",
     ("sglang.srt.managers.overlap_utils", "resolve_forward_inputs"): "22eb963dd2efd872f41713f10550cdbc",
+    ("sglang.srt.managers.scheduler", "Scheduler.resolve_forward_inputs"): "22eb963dd2efd872f41713f10550cdbc",
     ("sglang.srt.managers.utils", "GenerationBatchResult.copy_to_cpu"): "e0a99e51c5a80340b999a57118a5a7e1",
 }
 
@@ -813,6 +814,9 @@ def register_hooks(registry, around):
         ("sglang.srt.managers.overlap_utils.FutureMap.__init__", _future_map_init),
         ("sglang.srt.managers.overlap_utils.FutureMap._stash", _stash),
         ("sglang.srt.managers.overlap_utils.resolve_forward_inputs", _resolve_inputs),
+        # The scheduler stores its own staticmethod reference. Hook propagation
+        # updates module aliases, so the class attribute needs its own hook.
+        ("sglang.srt.managers.scheduler.Scheduler.resolve_forward_inputs", _resolve_inputs),
         ("sglang.srt.model_executor.forward_batch_info.ForwardBatch.init_new", _forward_batch_init),
         ("sglang.srt.managers.scheduler.Scheduler.init_overlap", _scheduler_init_overlap),
         ("sglang.srt.managers.utils.GenerationBatchResult.copy_to_cpu", _copy_result),
