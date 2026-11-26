@@ -97,20 +97,20 @@ _RUNTIME_SOURCES_MD5 = {
     # skipped when the graph sampled on device (its tokens and logprobs are returned instead); runs on the host sampler
     ("sglang.srt.model_executor.model_runner", "ModelRunner.sample"): "782f8a03a5b848b8519b55f4ae062608",
     # skipped after the forward's first request, along with preemption for a request the forward refuses
-    ("sglang.srt.managers.schedule_policy", "PrefillAdder.add_one_req"): "7307599dd69fb761692018e8f1234ceb",
-    ("sglang.srt.managers.schedule_policy", "PrefillAdder.preempt_to_schedule"): "4786f82c61c5ddc9ada287fc0fd0658e",
+    ("sglang.srt.managers.schedule_policy", "PrefillAdder.add_one_req"): "c9ea767f6c48f4389d2afe632f9a35d8",
+    ("sglang.srt.managers.schedule_policy", "PrefillAdder.preempt_to_schedule"): "97b81158073fc4fa84375811fed4b0d2",
     # it would replace a request's pending abort with a successful finish, so the hook applies the abort first
     ("sglang.srt.disaggregation.prefill", "SchedulerDisaggregationPrefillMixin.process_disagg_prefill_transfer_queue"):
         "5a34449ca451e64c6ac6759f54b9e460",
     # replaced: the requests go over the TP group's message queue instead of its broadcast
     ("sglang.srt.managers.scheduler_components.request_receiver",
-     "SchedulerRequestReceiver._broadcast_reqs_across_ranks"): "2c89050881db2b90eb39e316e32cd8c6",
+     "SchedulerRequestReceiver._broadcast_reqs_across_ranks"): "94eb66bbcae6c03dcffcefc6b1b61e01",
     # replaced for a model that builds its own KV pools: alloc_memory_pool takes its budgets, pools and allocator
     ("sglang.srt.mem_cache.kv_cache_configurator", "KVCacheConfigurator.configure"): "26002a8418c48534b2ae0f4dc60a703e",
-    ("sglang.srt.model_executor.model_runner", "ModelRunner.alloc_memory_pool"): "b8acb227f87b6ce7940c4343d11d7c9b",
+    ("sglang.srt.model_executor.model_runner", "ModelRunner.alloc_memory_pool"): "b5060ab1ecc6284611cd90bd288bbada",
     # skipped for a model that runs no step through SGLang's attention backends: the hybrid linear-attention wrapper
     # and the decode graphs' gather alignment (_no_linear_attention_backend, _no_decode_gathers)
-    ("sglang.srt.layers.attention.attention_registry", "attn_backend_wrapper"): "3c632b6bde44af715ca38957fd7a8e4d",
+    ("sglang.srt.layers.attention.attention_registry", "attn_backend_wrapper"): "21597b238e312032c5f9a9e9bb4e77f4",
     ("sglang.srt.model_executor.model_runner", "ModelRunner.decode_graph_gather_requirements"):
         "2fbdd971ac0802feaa71f9435cd8348c",
     # the readers of the configurator fields _without_draft_kv_pool clears: the DFLASH draft cell size, the fused draft
