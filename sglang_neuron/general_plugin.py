@@ -467,11 +467,12 @@ def _register() -> None:
     _register_decode_context_parallel(policy)
     # HiCache L2 (only reached with --enable-hierarchical-cache): the Neuron host pools, their transfer events and the
     # node's shared host budget
-    from sglang_neuron.mem_cache import host_budget, host_pool, hybrid_host_pool
+    if policy.hierarchical_cache:
+        from sglang_neuron.mem_cache import host_budget, host_pool, hybrid_host_pool
 
-    host_pool.register_hooks(HookRegistry, HookType)
-    hybrid_host_pool.register_hooks(HookRegistry, HookType)
-    host_budget.register_hooks(HookRegistry, HookType)
+        host_pool.register_hooks(HookRegistry, HookType)
+        hybrid_host_pool.register_hooks(HookRegistry, HookType)
+        host_budget.register_hooks(HookRegistry, HookType)
     logger.info("[neuron] runtime registered (serving policy %s)", policy.to_json())
 
 
