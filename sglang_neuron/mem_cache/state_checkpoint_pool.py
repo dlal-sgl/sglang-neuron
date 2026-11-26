@@ -413,8 +413,7 @@ def maybe_init_checkpoint_pool(original, *, mamba_size, cache_params, mamba_laye
     return store
 
 
-# Upstream functions the store wraps or relies on, pinned by md5 against SGLang 43881a7 (sglang_patches.source_guard);
-# a changed source stops the launch.
+# Source guards for upstream functions the store wraps or relies on.
 _SOURCES_MD5 = {
     # wrapped: built inside HybridReqToTokenPool._init_mamba_pool (pinned by the seam) after the request pool
     ("sglang.srt.mem_cache.mamba_checkpoint_pool", "maybe_init_int8_mamba_checkpoint_pool"):
@@ -425,10 +424,10 @@ _SOURCES_MD5 = {
         "603bfc09ce044e066cb206e54a55917e",
     # takes one checkpoint slot per insert, evicting a cached checkpoint when the store is full
     ("sglang.srt.mem_cache.unified_cache.components.mamba", "MambaComponent._alloc_int8_ckpt_slot"):
-        "2f6e0934a6734dd27bfdfa4926b660ac",
+        "12563bc0e1a48178f3a3be565b2547ba",
     # the hit: load_to_active(state.pool, cow sources, cow destinations), host index tensors
     ("sglang.srt.model_executor.model_runner", "ModelRunner._maybe_execute_deferred_mamba_cow_and_clear"):
-        "e6563c974d16e638dc56944e655ebb95",
+        "540d2ec2fc794995edb2025cfee3cef1",
     # the launch refusals the store relies on (HiCache, LMCache, unified memory, a custom radix backend)
     ("sglang.srt.arg_groups.mamba_hook", "handle_int8_mamba_checkpoint"): "0828d30abbf63df6ce4e5742ea55fb71",
 }

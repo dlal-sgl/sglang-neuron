@@ -173,7 +173,9 @@ class NeuronStatePool(MambaPool):
         return type(name or f"NeuronStatePool_{spec.family}", (cls,), {"spec": spec, "ops": ops})
 
     def __init__(self, *, size: int, spec_state_size: int, cache_params, mamba_layer_ids: Sequence[int], device,
-                 speculative_eagle_topk: Optional[int] = None, linear_replayssm_cache_len: int = 16, **options):
+                 speculative_eagle_topk: Optional[int] = None, linear_replayssm_cache_len: int = 16,
+                 allocate_intermediate_ssm: bool = True, **options):
+        # The Neuron pool implements its own state layout without upstream's intermediate SSM buffers.
         spec = type(self).spec
         if spec is None:
             raise TypeError("NeuronStatePool is unbound: build the pool class with NeuronStatePool.bind(spec, ops)")
