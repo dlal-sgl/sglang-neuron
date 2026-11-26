@@ -37,10 +37,13 @@ Record the image digests and weight pack revision for the candidate and the patc
 Confirm the retained source guards pass and smoke-test ordinary Qwen3-0.6B on the candidate before this run.
 
 1. Start both roles and the balancer with the commands above. Confirm both role logs report the Qwen3.5
-   megakernel. Redirect `run_client.sh` output to a file for each image and compare the response's `output_ids`
-   for exact greedy token parity.
-2. Exercise a cached prefill and a second decode using the same prefix. Use a request routed back to the same
-   prefill replica when checking reuse. Verify the request completes through the balancer.
+   megakernel and the NIXL LIBFABRIC backend. Capture the greedy response for each image with
+   `run_client.sh | sed -n '2p' | jq -e '.output_ids | select(type == "array" and length > 0)'`.
+   Save the token IDs as `baseline.ids.json` and `candidate.ids.json` and compare with
+   `diff -u baseline.ids.json candidate.ids.json`.
+2. Send a request with a prefix longer than one 2,048-token prefill chunk, then send a request sharing that prefix.
+   Route both to the same prefill replica when checking reuse. Check the second request's cache-hit count and
+   save both responses. Verify both complete through the balancer.
 3. Repeat startup with `--enable-nvidia-megakernel` appended to the role commands and check for the launcher
    deprecation warning. Save logs for both roles and the balancer with the exact launch commands.
 

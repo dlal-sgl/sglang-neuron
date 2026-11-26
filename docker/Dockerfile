@@ -20,7 +20,7 @@
 ARG BASE=public.ecr.aws/neuron/torch-neuronx@sha256:b4648437b8c7dbfa2acde18301a4bb4ae9658da5a412da75c59693ed4fd308ec
 # The SGLang revision the plugin's SGLang patches are written against and md5-pinned to (README, setup-guide.md), and
 # the version its wheel gets: the one SGLang's own versioning gives this commit (its setuptools-scm describe command:
-# the newest release tag, v0.5.23, plus the commit's distance from it, 413), which a depth-1 fetch cannot compute.
+# the newest matching release tag and the commit's distance from it), which a depth-1 fetch cannot compute.
 # Vulnerability scanners compare it with the fixed versions of SGLang's advisories, so it must not be a placeholder.
 ARG SGLANG_COMMIT=6a1b4b67d238b17a2fbf675de8d9836692599fcc
 ARG SGLANG_VERSION=0.5.24.dev2297+g6a1b4b67d

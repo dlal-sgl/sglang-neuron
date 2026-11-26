@@ -34,7 +34,7 @@ the same checkpoint at the same ``--context-length`` (which sets the block table
 Upstream: SGLang would carry the fingerprint in its bootstrap protocol next to a chunk-keyed radix tree. SGLang's Rust
 bootstrap registry (``SGLANG_RUST_SERVER``) drops the keys, so a chunk-keyed decode refuses every prefill behind it.
 
-Targets are md5-pinned against upstream SGLang 43881a7, one table per registration."""
+Each registration has its own source guard table."""
 
 from __future__ import annotations
 
@@ -62,8 +62,8 @@ _INFO_QUERY = ("prefill_dp_rank", "prefill_cp_rank", "target_tp_rank", "target_p
 
 # (module, qualified name): md5 of upstream's source, for each process role's hooks
 _SERVER_TARGETS_MD5 = {
-    (_COMMON, "CommonKVBootstrapServer._handle_route_put"): "e6d3daff4260d7db9207db63c2b3c3ef",
-    (_COMMON, "CommonKVBootstrapServer._handle_route_get"): "a672abb72ddbed3b3e52cb37e6831b7c",
+    (_COMMON, "CommonKVBootstrapServer._handle_route_put"): "c9c1cdd3ea8c6dae20f845311f3a8a7b",
+    (_COMMON, "CommonKVBootstrapServer._handle_route_get"): "b8330db38ac27c729242a8929549b0d8",
     # awaits self._handle_route_put and _handle_route_get by attribute, so the registry's synchronous wrapper of each
     # hook returns the coroutine it awaits
     (_COMMON, "CommonKVBootstrapServer._handle_route"): "f01eae2a78dcb3af86d7f1921241e783",
@@ -196,7 +196,7 @@ async def handle_route_get(original_fn, self, request, *args, **kwargs):
     from aiohttp import web
 
     response = await original_fn(self, request, *args, **kwargs)
-    chunk, numerics = getattr(self, _SERVER_ADVERT, (0, None))
+    chunk, numerics = getattr(self, _SERVER_ADVERT, None) or (0, None)
     # upstream answers 200 only to a query whose four ranks it parsed as integers
     if not chunk or response.status != 200 or any(int(request.query[name]) != -1 for name in _INFO_QUERY):
         return response
