@@ -74,7 +74,7 @@
   "sglang.srt.managers.scheduler_pp_mixin:SchedulerPPMixin.event_loop_pp_disagg_prefill": "8bbb0377fb4214f8ff289436470f2e7e",
   "sglang.srt.managers.scheduler_pp_mixin:SchedulerPPMixin.get_rids": "4e70b2f59a306baa8f96b1a2af918aa7",
   "sglang.srt.managers.scheduler_pp_mixin:SchedulerPPMixin.process_bootstrapped_queue": "fe06e4c8ce95584afa4e05d0554236e3",
-  "sglang.srt.mem_cache.allocation:assign_req_to_token_pool_func": "cadcb0b505e5773203fac189445a947b",
+  "sglang.srt.mem_cache.allocation:assign_req_to_token_pool_func": "d4aaf7055ba348a3af59a076a27e870c",
   "sglang.srt.mem_cache.allocation:get_last_loc": "5843e9a0a2658830b7d453973f2a8c27",
   "sglang.srt.mem_cache.kv_cache_configurator:KVCacheConfigurator._apply_token_constraints": "355f93e37c79615157cdd25b2034ffe5",
   "sglang.srt.mem_cache.kv_cache_configurator:KVCacheConfigurator._build_req_to_token_pool": "4d057e0f8d955848dc16e2a939b84f92",
