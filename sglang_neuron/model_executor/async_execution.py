@@ -739,6 +739,16 @@ def _forward_batch_init(original_fn, cls, batch, *args, **kwargs):
     return result
 
 
+def _eager_load_batch(original_fn, self, forward_batch, *args, **kwargs):
+    result = original_fn(self, forward_batch, *args, **kwargs)
+    # EagerRunner copies declared ForwardBatch fields. The Neuron token plan
+    # carries the real IDs when input_ids only supplies a shape.
+    token_plan = getattr(forward_batch, "neuron_token_plan", None)
+    if token_plan is not None:
+        result.neuron_token_plan = token_plan
+    return result
+
+
 def _scheduler_init_overlap(original_fn, self, *args, **kwargs):
     result = original_fn(self, *args, **kwargs)
     self.device_module = _CPUDeviceWithEvents(self.device_module)
@@ -803,6 +813,7 @@ _SOURCES_MD5 = {
     ("sglang.srt.managers.overlap_utils", "resolve_forward_inputs"): "22eb963dd2efd872f41713f10550cdbc",
     ("sglang.srt.managers.scheduler", "Scheduler.resolve_forward_inputs"): "22eb963dd2efd872f41713f10550cdbc",
     ("sglang.srt.managers.utils", "GenerationBatchResult.copy_to_cpu"): "e0a99e51c5a80340b999a57118a5a7e1",
+    ("sglang.srt.model_executor.runner.eager_runner", "EagerRunner.load_batch"): "4b0308c61b82a754907a6bfe0dc8e750",
 }
 
 
@@ -818,6 +829,7 @@ def register_hooks(registry, around):
         # updates module aliases, so the class attribute needs its own hook.
         ("sglang.srt.managers.scheduler.Scheduler.resolve_forward_inputs", _resolve_inputs),
         ("sglang.srt.model_executor.forward_batch_info.ForwardBatch.init_new", _forward_batch_init),
+        ("sglang.srt.model_executor.runner.eager_runner.EagerRunner.load_batch", _eager_load_batch),
         ("sglang.srt.managers.scheduler.Scheduler.init_overlap", _scheduler_init_overlap),
         ("sglang.srt.managers.utils.GenerationBatchResult.copy_to_cpu", _copy_result),
     ):
